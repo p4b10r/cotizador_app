@@ -7,12 +7,8 @@ import sqlite3
 
 import backend
 
-
 #columnspan indica columnas vacías
 #pady indica un espaciado interno en y
-
-
-
 
 class Cotizador:
 
@@ -22,6 +18,17 @@ class Cotizador:
         #ventana
         self.wind=window
         self.wind.title("Cotizador")
+
+        self.pestanas=ttk.Notebook(window)
+        self.pestanas.pack()
+        self.p1=ttk.Frame(window)
+        self.p2=ttk.Frame(window)
+
+        self.pestanas.add(self.p1, text="Cotización")
+        self.pestanas.add(self.p2, text="Variables")
+
+
+
 
         cliente=StringVar()
         empresa=StringVar()
@@ -46,22 +53,28 @@ class Cotizador:
                 backend.getClientes(self.treecliente.delete(*self.treecliente.get_children()))
 
         def insDataLote():
-            #if(len(descripcion.get())!=0):
-            backend.insertDataLote(descripcion.get(), float(pesolote.get()), float(tiempolote.get()), int(qpiezas.get()), int(qlotes.get()))
-            backend.getLote(self.treelote)
-
+            if(len(descripcion.get())!=0):
+                backend.insertDataLote(descripcion.get(), float(pesolote.get()), float(tiempolote.get()), int(qpiezas.get()), int(qlotes.get()))
+                backend.getLote(self.treelote)
         def cleDataLote():
 
             if(len(descripcion.get())!=0):
                 backend.clearDataLote()
-                backend.getLote(self.treelote.delete(*self.treelote.get_children()))
+                backend.getLote(self.treelote.delete(self.treelote.get_children()))
+
+        def delDataLote():
+            self.treelote.item(self.treelote.selection())["text"][0]
+            backend.deleteDataLote(self.treelote.item(self.treelote.selection())["text"])
+            backend.getLote(self.treelote)
 
 
 
 
-    #========================FRAMES==================================
-        dataframe=LabelFrame(self.wind, text='Datos de cotización')
-        dataframe.grid(row=1, column=0)
+
+
+    #========================PESTAÑA1==================================
+        dataframe=LabelFrame(self.p1, text='Datos de cotización')
+        dataframe.grid(row=0, column=0, sticky=W)
 
         Label(dataframe, text='Cliente: ').grid(row=1, column=0)
         self.txtcliente=Entry(dataframe, textvariable=cliente)
@@ -84,8 +97,8 @@ class Cotizador:
 
 
         #contenedor frame
-        varframe=LabelFrame(self.wind, text='Variables de lote')
-        varframe.grid(row=1, column=1, pady=10)
+        varframe=LabelFrame(self.p1, text='Variables de lote')
+        varframe.grid(row=1, column=0, sticky=W)
         #input peso
         Label(varframe, text='Descripción: ').grid(row=0, column=0)
         self.txtdescripcion=Entry(varframe, textvariable=descripcion)
@@ -121,9 +134,9 @@ class Cotizador:
         #sticky=W+E ocupa todo el ancho disponible, west + east
         #ttk.Button(self.buttonframe, text='Cotizar',).grid(row=0, sticky=W+E)
 
-        clienteframe=LabelFrame(self.wind, text="Cliente")
-        clienteframe.grid(row=5, column=0, columnspan=2)
-        self.treecliente=ttk.Treeview(clienteframe, height=3, column=('#1','#2','#3'))
+        clienteframe=LabelFrame(self.p1, text="Cliente")
+        clienteframe.grid(row=0, column=1,sticky=W+E+N)
+        self.treecliente=ttk.Treeview(clienteframe, height=1, column=('#1','#2','#3'))
         self.treecliente.grid(row=1, column=0)
         self.treecliente.heading('#0', text="Cliente", anchor=CENTER)
         self.treecliente.heading('#1', text="Empresa", anchor=CENTER)
@@ -131,27 +144,97 @@ class Cotizador:
         self.treecliente.heading('#3', text="Comentarios", anchor=CENTER)
 
 
-        ttk.Button(self.wind, text="Limpiar Cliente", command=cleDataCliente).grid(row=6, columnspan=2, sticky=W+E)
+        ttk.Button(clienteframe, text="Limpiar Cliente", command=cleDataCliente).grid(row=2, columnspan=2, sticky=W+E)
 
         #Tabla
-        loteframe=LabelFrame(self.wind, text='Lotes')
-        loteframe.grid(row=7, column=0, columnspan=2)
-        self.treelote=ttk.Treeview(loteframe, height=10, column=('#1','#2','#3','#4'))
+        loteframe=LabelFrame(self.p1, text='Lotes')
+        loteframe.grid(row=1, column=1, sticky=E+N)
+        self.treelote=ttk.Treeview(loteframe, height=6, column=('#1','#2','#3','#4',"#5"))
         self.treelote.grid(row=1, column=0)
         self.treelote.heading('#0', text='Descripción', anchor=CENTER)
+        self.treelote.column("#0", width=340)
         self.treelote.heading('#1', text='Peso [g]', anchor=CENTER)
+        self.treelote.column("#1", width=80)
         self.treelote.heading('#2', text='Tiempo [hrs]',anchor=CENTER)
-        self.treelote.heading('#3', text='Cantidad piezas [un]',anchor=CENTER)
-        self.treelote.heading('#4', text='Cantidad lotes [un]',anchor=CENTER)
+        self.treelote.column("#2", width=90)
+        self.treelote.heading('#3', text='Cant. piezas [un]',anchor=CENTER)
+        self.treelote.column("#3", width=100)
+        self.treelote.heading('#4', text='Cant. lotes [un]',anchor=CENTER)
+        self.treelote.column("#4", width=100)
+        self.treelote.heading('#5', text='Costo [$]',anchor=CENTER)
+        self.treelote.column("#5", width=80)
         backend.getLote(self.treelote)
 
+        ttk.Button(loteframe, text="Limpiar Lotes", command=delDataLote).grid(row=2, columnspan=1, sticky=W+E)
+        ttk.Button(loteframe, text="Cotizar").grid(row=3, columnspan=1, sticky=W+E)
 
 
-        ttk.Button(self.wind, text="Limpiar Lotes", command=cleDataLote).grid(row=8, columnspan=2, sticky=W+E)
-        ttk.Button(self.wind, text="Cotizar").grid(row=9, columnspan=2, sticky=W+E)
-        ttk.Button(self.wind, text="Exportar pdf").grid(row=10, columnspan=2, sticky=W+E)
+        cotizframe=LabelFrame(self.p1, text="Cotización")
+        cotizframe.grid(row=2, column=1, sticky=E+W, columnspan=1)
+        self.treecotiz=ttk.Treeview(cotizframe, height=1, column=("#1","#2"))
+        self.treecotiz.heading("#0", text="Cliente", anchor=CENTER)
+        self.treecotiz.heading("#1", text="Cantidad", anchor=CENTER)
+        self.treecotiz.heading("#2", text="Total", anchor=CENTER)
+        ttk.Button(cotizframe, text="Exportar pdf").grid(row=0, column=3, sticky=W+E)
+
+        self.treecotiz.grid(row=0, column=0)
+
+    #========================PESTAÑA2==================================
+
+        fijosframe=LabelFrame(self.p2, text="Cálculo de costos")
+        fijosframe.grid(row=0, column=0)
+        Label(fijosframe, text="Costos Fijos [$/mes]: ").grid(row=0, column=0)
+        self.costofijo=Entry(fijosframe)
+        self.costofijo.grid(row=0,column=1)
+        Label(fijosframe, text="Número de Máquinas: ").grid(row=1, column=0)
+        self.maquinas=Entry(fijosframe)
+        self.maquinas.grid(row=1,column=1)
+        Label(fijosframe, text="Costos Fijos [$/mes]: ").grid(row=2, column=0)
+        self.horascubiertas=Entry(fijosframe)
+        self.horascubiertas.grid(row=2,column=1)
+        Label(fijosframe, text="Factor de Mantenimiento: ").grid(row=3, column=0)
+        self.factormtto=Entry(fijosframe)
+        self.factormtto.grid(row=3,column=1)
+        Label(fijosframe, text="Factor de error: ").grid(row=4, column=0)
+        self.factorerror=Entry(fijosframe)
+        self.factorerror.grid(row=4,column=1)
+        Label(fijosframe, text="Depreciación: ").grid(row=5, column=0)
+        self.depreciacion=Entry(fijosframe)
+        self.depreciacion.grid(row=5,column=1)
 
 
+
+        materialframe=LabelFrame(self.p2, text="Costo de material")
+        materialframe.grid(row=1, column=0,sticky=W+E+N+S)
+        Label(materialframe, text="PLA+ [$/kg]: ").grid(row=0, column=0)
+        self.pla=Entry(materialframe)
+        self.pla.grid(row=0, column=1)
+        Label(materialframe, text="ABS [$/kg]: ").grid(row=1, column=0)
+        self.abs=Entry(materialframe)
+        self.abs.grid(row=1, column=1)
+        Label(materialframe, text="PETG [$/kg]: ").grid(row=2, column=0)
+        self.petg=Entry(materialframe)
+        self.petg.grid(row=2, column=1)
+        Label(materialframe, text="Técnico [$/kg]: ").grid(row=3, column=0)
+        self.tecnico=Entry(materialframe)
+        self.tecnico.grid(row=3, column=1)
+
+        variableframe=LabelFrame(self.p2, text="Variables")
+        variableframe.grid(row=0, column=1, sticky=W+E+N+S)
+        self.treevariable=ttk.Treeview(variableframe, height=3, column=("#1","#2"))
+        self.treevariable.heading("#0", text="Costo Hora real", anchor=CENTER)
+        self.treevariable.heading("#1", text="Costo Material Peso", anchor=CENTER)
+        self.treevariable.heading("#2", text="IVA", anchor=CENTER)
+        self.treevariable.grid(row=0,column=0)
+
+        treematerialframe=LabelFrame(self.p2, text="Costo de material")
+        treematerialframe.grid(row=1, column=1, sticky=N+S+E+W)
+        self.treematerial=ttk.Treeview(treematerialframe, height=1, column=("#1","#2","#3"))
+        self.treematerial.heading("#0", text="PLA+", anchor=CENTER)
+        self.treematerial.heading("#1",text="ABS", anchor=CENTER)
+        self.treematerial.heading("#2", text="PETG", anchor=CENTER)
+        self.treematerial.heading("#3",text="Técnico",anchor=CENTER)
+        self.treematerial.grid(row=1,column=1)
 
 if __name__=="__main__":
     window=Tk()
