@@ -40,7 +40,19 @@ class Cotizador:
         tiempolote=StringVar()
         qpiezas=StringVar()
         qlotes=StringVar()
+
+        costofijo=StringVar()
+        maquinas=StringVar()
+        horascubiertas=StringVar()
+        factormtto=StringVar()
+        factorerror=StringVar()
+        depreciacion=StringVar()
+        costohorareal=StringVar()
+        costomaterialpeso=StringVar()
+
         #========================FUNCIONES===============================
+
+        #::::::::::::::::::::::::DATACLIENTE::::::::::::::::::::::::::::
         def insDataCliente():
             if(len(cliente.get())!=0):
                 backend.insertDataCliente(cliente.get(), empresa.get(), email.get(), comentarios.get())
@@ -52,6 +64,7 @@ class Cotizador:
                 backend.clearDataCliente()
                 backend.getClientes(self.treecliente.delete(*self.treecliente.get_children()))
 
+        #::::::::::::::::::::::::DATALOTE::::::::::::::::::::::::::::
         def insDataLote():
             if(len(descripcion.get())!=0):
                 backend.insertDataLote(descripcion.get(), float(pesolote.get()), float(tiempolote.get()), int(qpiezas.get()), int(qlotes.get()))
@@ -67,7 +80,12 @@ class Cotizador:
             backend.deleteDataLote(self.treelote.item(self.treelote.selection())["text"])
             backend.getLote(self.treelote)
 
+        #::::::::::::::::::::::::DATACOSTOS::::::::::::::::::::::::::::
 
+        def insDataCostos():
+
+            backend.insDataCostos(float(costofijo.get()), int(maquinas.get()), float(factormtto.get()), float(horascubiertas.get()),float(factorerror.get()),float(depreciacion.get()), float(costohorareal.get()),float(costomaterialpeso.get()))
+            backend.getDataCostos(self.treevariable)
 
 
 
@@ -184,48 +202,61 @@ class Cotizador:
         fijosframe=LabelFrame(self.p2, text="Cálculo de costos")
         fijosframe.grid(row=0, column=0)
         Label(fijosframe, text="Costos Fijos [$/mes]: ").grid(row=0, column=0)
-        self.costofijo=Entry(fijosframe)
-        self.costofijo.grid(row=0,column=1)
+        self.txtcostofijo=Entry(fijosframe,textvariable=costofijo)
+        self.txtcostofijo.grid(row=0,column=1)
         Label(fijosframe, text="Número de Máquinas: ").grid(row=1, column=0)
-        self.maquinas=Entry(fijosframe)
-        self.maquinas.grid(row=1,column=1)
-        Label(fijosframe, text="Costos Fijos [$/mes]: ").grid(row=2, column=0)
-        self.horascubiertas=Entry(fijosframe)
-        self.horascubiertas.grid(row=2,column=1)
+        self.txtmaquinas=Entry(fijosframe,textvariable=maquinas)
+        self.txtmaquinas.grid(row=1,column=1)
+        Label(fijosframe, text="Horas a cubrir: ").grid(row=2, column=0)
+        self.txthorascubiertas=Entry(fijosframe,textvariable=horascubiertas)
+        self.txthorascubiertas.grid(row=2,column=1)
         Label(fijosframe, text="Factor de Mantenimiento: ").grid(row=3, column=0)
-        self.factormtto=Entry(fijosframe)
-        self.factormtto.grid(row=3,column=1)
+        self.txtfactormtto=Entry(fijosframe,textvariable=factormtto)
+        self.txtfactormtto.grid(row=3,column=1)
         Label(fijosframe, text="Factor de error: ").grid(row=4, column=0)
-        self.factorerror=Entry(fijosframe)
-        self.factorerror.grid(row=4,column=1)
+        self.txtfactorerror=Entry(fijosframe,textvariable=factorerror)
+        self.txtfactorerror.grid(row=4,column=1)
         Label(fijosframe, text="Depreciación: ").grid(row=5, column=0)
-        self.depreciacion=Entry(fijosframe)
-        self.depreciacion.grid(row=5,column=1)
+        self.txtdepreciacion=Entry(fijosframe,textvariable=depreciacion)
+        self.txtdepreciacion.grid(row=5,column=1)
+        ttk.Button(fijosframe, text="Actualizar", command=insDataCostos).grid(row=6, column=0,columnspan=2,sticky=W+E)
 
 
 
         materialframe=LabelFrame(self.p2, text="Costo de material")
         materialframe.grid(row=1, column=0,sticky=W+E+N+S)
         Label(materialframe, text="PLA+ [$/kg]: ").grid(row=0, column=0)
-        self.pla=Entry(materialframe)
-        self.pla.grid(row=0, column=1)
+        self.txtpla=Entry(materialframe)
+        self.txtpla.grid(row=0, column=1)
         Label(materialframe, text="ABS [$/kg]: ").grid(row=1, column=0)
-        self.abs=Entry(materialframe)
-        self.abs.grid(row=1, column=1)
+        self.txtabs=Entry(materialframe)
+        self.txtabs.grid(row=1, column=1)
         Label(materialframe, text="PETG [$/kg]: ").grid(row=2, column=0)
-        self.petg=Entry(materialframe)
-        self.petg.grid(row=2, column=1)
+        self.txtpetg=Entry(materialframe)
+        self.txtpetg.grid(row=2, column=1)
         Label(materialframe, text="Técnico [$/kg]: ").grid(row=3, column=0)
-        self.tecnico=Entry(materialframe)
-        self.tecnico.grid(row=3, column=1)
+        self.txttecnico=Entry(materialframe)
+        self.txttecnico.grid(row=3, column=1)
 
         variableframe=LabelFrame(self.p2, text="Variables")
         variableframe.grid(row=0, column=1, sticky=W+E+N+S)
-        self.treevariable=ttk.Treeview(variableframe, height=3, column=("#1","#2"))
-        self.treevariable.heading("#0", text="Costo Hora real", anchor=CENTER)
-        self.treevariable.heading("#1", text="Costo Material Peso", anchor=CENTER)
-        self.treevariable.heading("#2", text="IVA", anchor=CENTER)
+        self.treevariable=ttk.Treeview(variableframe, height=3, column=("#1","#2","#3","#4","#5","#6"))
+        self.treevariable.heading("#0", text="Costo Fijo [mens]", anchor=CENTER)
+        self.treevariable.column("#0",width=100)
+        self.treevariable.heading("#1", text="N° Máquinas", anchor=CENTER)
+        self.treevariable.column("#1",width=80)
+        self.treevariable.heading("#2", text="F. Mtto", anchor=CENTER)
+        self.treevariable.column("#2",width=50)
+        self.treevariable.heading("#3", text="F. Error", anchor=CENTER)
+        self.treevariable.column("#3",width=50)
+        self.treevariable.heading("#4", text="Hrs. Cubiertas", anchor=CENTER)
+        self.treevariable.column("#4",width=100)
+        self.treevariable.heading("#5", text="Costo Hra real", anchor=CENTER)
+        self.treevariable.column("#5",width=100)
+        self.treevariable.heading("#6", text="Costo Material Peso", anchor=CENTER)
+        self.treevariable.column("#6",width=130)
         self.treevariable.grid(row=0,column=0)
+
 
         treematerialframe=LabelFrame(self.p2, text="Costo de material")
         treematerialframe.grid(row=1, column=1, sticky=N+S+E+W)
