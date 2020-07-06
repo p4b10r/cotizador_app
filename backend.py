@@ -68,11 +68,19 @@ def getLote(treelote):
             treelote.insert('',0,text=row[1],values=(row[2],row[3],row[4],row[5]))
 #===============================DBCOSTOS===============================================
 
-def insDataCostos(costofijo, nmaquinas, fmtto,horascubiertas,ferror,depreciacion,costohorareal,costomaterialpeso):
+def insDataCostos(costofijo, maquinas, fmtto,horascubiertas,ferror,depreciacion,costohorareal,costomaterialpeso):
     with sqlite3.connect(db_name) as conn:
         cursor=conn.cursor()
-        result=cursor.execute('INSERT INTO costos VALUES (NULL,?,?,?,?,?,?,?)',(costofijo, nmaquinas, fmtto,horascubiertas,ferror,depreciacion,costohorareal,costomaterialpeso))
+        result=cursor.execute('INSERT INTO costos VALUES (NULL,?,?,?,?,?,?,?,?)',(costofijo, maquinas, fmtto,horascubiertas,ferror,depreciacion,((costofijo/(horascubiertas*maquinas))*ferror*fmtto)+depreciacion,fmtto*costofijo))
         conn.commit()
+
+def deleteDataCostos(treevariable):
+    with sqlite3.connect(db_name) as conn:
+        descripcion=treevariable
+        cursor=conn.cursor()
+        cursor.execute('DELETE FROM costos;',)
+        conn.commit()
+
 
 def getDataCostos(treevariable):
     with sqlite3.connect(db_name) as conn:
@@ -80,4 +88,29 @@ def getDataCostos(treevariable):
         db_rows=cursor.execute("SELECT * FROM costos")
         conn.commit()
         for row in db_rows:
-            treevariable.insert('',0,values=(row[1],row[2],row[3],row[5],row[4], row[7],row[8]))
+            treevariable.insert('',0,text=row[1],values=(row[2],row[3],row[5],row[4],row[6], row[7],row[8]))
+
+
+
+#==================================DBMATERIAL==========================================
+
+def insertDataMaterial(pla,abs,petg,tecnico):
+    with sqlite3.connect(db_name) as conn:
+        cursor=conn.cursor()
+        cursor.execute("INSERT INTO material VALUES (NULL,?,?,?,?)",(pla/1000,abs/1000,petg/1000,tecnico/1000))
+        conn.commit()
+
+
+def getDataMaterial(treematerial):
+    with sqlite3.connect(db_name) as conn:
+        cursor=conn.cursor()
+        db_rows=cursor.execute("SELECT * FROM material")
+        conn.commit()
+        for row in db_rows:
+            treematerial.insert('',0,text=row[1],values=(row[2],row[3], row[4]))
+
+def deleteDataMaterial(treematerial):
+    with sqlite3.connect(db_name) as conn:
+        cursor=conn.cursor()
+        cursor.execute("DELETE FROM material;",)
+        conn.commit()

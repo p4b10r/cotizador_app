@@ -41,14 +41,19 @@ class Cotizador:
         qpiezas=StringVar()
         qlotes=StringVar()
 
-        costofijo=StringVar()
+        costofijo=DoubleVar()
         maquinas=StringVar()
-        horascubiertas=StringVar()
-        factormtto=StringVar()
-        factorerror=StringVar()
-        depreciacion=StringVar()
-        costohorareal=StringVar()
-        costomaterialpeso=StringVar()
+        horascubiertas=DoubleVar()
+        factormtto=DoubleVar()
+        factorerror=DoubleVar()
+        depreciacion=DoubleVar()
+        costohorareal=DoubleVar()
+        costomaterialpeso=DoubleVar()
+
+        pla=DoubleVar()
+        abs=DoubleVar()
+        petg=DoubleVar()
+        tecnico=DoubleVar()
 
         #========================FUNCIONES===============================
 
@@ -86,6 +91,23 @@ class Cotizador:
 
             backend.insDataCostos(float(costofijo.get()), int(maquinas.get()), float(factormtto.get()), float(horascubiertas.get()),float(factorerror.get()),float(depreciacion.get()), float(costohorareal.get()),float(costomaterialpeso.get()))
             backend.getDataCostos(self.treevariable)
+
+
+        def delDataCostos():
+
+            backend.deleteDataCostos(self.treevariable)
+            backend.getDataCostos(self.treevariable.delete(*self.treevariable.get_children()))
+
+
+        #::::::::::::::::::::::::DATAMATERIAL:::::::::::::::::::::::::::::::
+
+        def insDataMaterial():
+            backend.insertDataMaterial(float(pla.get()),float(abs.get()),float(petg.get()),float(tecnico.get()))
+            backend.getDataMaterial(self.treematerial)
+
+        def delDataMaterial():
+            backend.deleteDataMaterial(self.treematerial)
+            backend.getDataMaterial(self.treematerial.delete(*self.treematerial.get_children()))
 
 
 
@@ -219,24 +241,27 @@ class Cotizador:
         Label(fijosframe, text="Depreciación: ").grid(row=5, column=0)
         self.txtdepreciacion=Entry(fijosframe,textvariable=depreciacion)
         self.txtdepreciacion.grid(row=5,column=1)
-        ttk.Button(fijosframe, text="Actualizar", command=insDataCostos).grid(row=6, column=0,columnspan=2,sticky=W+E)
+        ttk.Button(fijosframe, text="Eliminar", command=delDataCostos).grid(row=6, column=0,columnspan=2,sticky=W+E)
+        ttk.Button(fijosframe, text="Actualizar", command=insDataCostos).grid(row=7, column=0,columnspan=2,sticky=W+E)
 
 
 
         materialframe=LabelFrame(self.p2, text="Costo de material")
         materialframe.grid(row=1, column=0,sticky=W+E+N+S)
-        Label(materialframe, text="PLA+ [$/kg]: ").grid(row=0, column=0)
-        self.txtpla=Entry(materialframe)
-        self.txtpla.grid(row=0, column=1)
-        Label(materialframe, text="ABS [$/kg]: ").grid(row=1, column=0)
-        self.txtabs=Entry(materialframe)
+        Label(materialframe, text="PLA+ [$/kg]:                   ").grid(row=0, column=0, sticky=W+E)
+        self.txtpla=Entry(materialframe,textvariable=pla)
+        self.txtpla.grid(row=0, column=1, sticky=W+E, columnspan=2)
+        Label(materialframe, text="ABS [$/kg]:                    ").grid(row=1, column=0)
+        self.txtabs=Entry(materialframe,textvariable=abs)
         self.txtabs.grid(row=1, column=1)
-        Label(materialframe, text="PETG [$/kg]: ").grid(row=2, column=0)
-        self.txtpetg=Entry(materialframe)
+        Label(materialframe, text="PETG [$/kg]:                    ").grid(row=2, column=0)
+        self.txtpetg=Entry(materialframe,textvariable=petg)
         self.txtpetg.grid(row=2, column=1)
-        Label(materialframe, text="Técnico [$/kg]: ").grid(row=3, column=0)
-        self.txttecnico=Entry(materialframe)
+        Label(materialframe, text="Técnico [$/kg]:                   ").grid(row=3, column=0)
+        self.txttecnico=Entry(materialframe,textvariable=tecnico)
         self.txttecnico.grid(row=3, column=1)
+        ttk.Button(materialframe, text="Eliminar",command=delDataMaterial).grid(row=4, column=0, columnspan=2, sticky=W+E)
+        ttk.Button(materialframe, text="Actualizar",command=insDataMaterial).grid(row=5, column=0, columnspan=2, sticky=W+E)
 
         variableframe=LabelFrame(self.p2, text="Variables")
         variableframe.grid(row=0, column=1, sticky=W+E+N+S)
@@ -251,22 +276,22 @@ class Cotizador:
         self.treevariable.column("#3",width=50)
         self.treevariable.heading("#4", text="Hrs. Cubiertas", anchor=CENTER)
         self.treevariable.column("#4",width=100)
-        self.treevariable.heading("#5", text="Costo Hra real", anchor=CENTER)
+        self.treevariable.heading("#5", text="Depreciación", anchor=CENTER)
         self.treevariable.column("#5",width=100)
-        self.treevariable.heading("#6", text="Costo Material Peso", anchor=CENTER)
+        self.treevariable.heading("#6", text="Costo Hora Real", anchor=CENTER)
         self.treevariable.column("#6",width=130)
         self.treevariable.grid(row=0,column=0)
-
+        backend.getDataCostos(self.treevariable)
 
         treematerialframe=LabelFrame(self.p2, text="Costo de material")
         treematerialframe.grid(row=1, column=1, sticky=N+S+E+W)
         self.treematerial=ttk.Treeview(treematerialframe, height=1, column=("#1","#2","#3"))
-        self.treematerial.heading("#0", text="PLA+", anchor=CENTER)
-        self.treematerial.heading("#1",text="ABS", anchor=CENTER)
-        self.treematerial.heading("#2", text="PETG", anchor=CENTER)
-        self.treematerial.heading("#3",text="Técnico",anchor=CENTER)
+        self.treematerial.heading("#0", text="PLA+ [$/g]", anchor=CENTER)
+        self.treematerial.heading("#1",text="ABS [$/g]", anchor=CENTER)
+        self.treematerial.heading("#2", text="PETG [$/g]", anchor=CENTER)
+        self.treematerial.heading("#3",text="Técnico [$/g]",anchor=CENTER)
         self.treematerial.grid(row=1,column=1)
-
+        backend.getDataMaterial(self.treematerial)
 if __name__=="__main__":
     window=Tk()
     app=Cotizador(window)
