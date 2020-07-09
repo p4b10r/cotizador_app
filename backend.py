@@ -32,10 +32,10 @@ def getClientes(treecliente):
 
 #===============================DBLOTE===============================================
 
-def insertDataLote(descripcion, pesolote, tiempolote, qpiezas, qlote):
+def insertDataLote(descripcion,mat,pesolote, tiempolote, qpiezas, qlote):
     with sqlite3.connect(db_name) as conn:
         cursor=conn.cursor()
-        result=cursor.execute('INSERT INTO lote VALUES (NULL,?,?,?,?,?,NULL)',(descripcion, pesolote, tiempolote, qpiezas, qlote))
+        result=cursor.execute('INSERT INTO lote VALUES (NULL,?,?,?,?,?,?,?,?,?)',(descripcion, mat, pesolote, tiempolote, qpiezas, qlote, costoHora(tiempolote),costoMaterial(mat,pesolote),costoHora(tiempolote)+costoMaterial(mat,pesolote)))
         conn.commit()
         return result
 
@@ -65,7 +65,7 @@ def getLote(treelote):
         db_rows=cursor.execute(query)
         conn.commit()
         for row in db_rows:
-            treelote.insert('',0,text=row[1],values=(row[2],row[3],row[4],row[5]))
+            treelote.insert('',0,text=row[1],values=(row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9]))
 #===============================DBCOSTOS===============================================
 
 def insDataCostos(costofijo, maquinas, fmtto,horascubiertas,ferror,depreciacion,costohorareal,costomaterialpeso):
@@ -114,3 +114,46 @@ def deleteDataMaterial(treematerial):
         cursor=conn.cursor()
         cursor.execute("DELETE FROM material;",)
         conn.commit()
+
+
+
+
+#=============================CALCULOS=================================================
+
+
+def costoHora(tiempolote):
+    with sqlite3.connect(db_name) as conn:
+        cursora=conn.cursor()
+        cursora.execute("SELECT costohorareal FROM costos")
+        cursorb=conn.cursor()
+        cursorb.execute("SELECT tiempo FROM lote")
+        a=cursora.fetchall()
+        b=cursorb.fetchall()
+        costo_hora=tiempolote*a[0][0]
+        print(costo_hora)
+        return costo_hora
+
+def costoMaterial(mat,pesolote):
+    with sqlite3.connect(db_name) as conn:
+        if mat=="PLA+":
+            cursor=conn.cursor()
+            cursor.execute("SELECT pla FROM material")
+            pla=cursor.fetchall()
+            costo_mat=pla[0][0]*pesolote
+
+        elif mat=="ABS":
+            cursor=conn.cursor()
+            cursor.execute("SELECT abs FROM material")
+            abs=cursor.fetchall()
+            costo_mat=abs[0][0]*pesolote
+        elif mat=="PETG":
+            cursor=conn.cursor()
+            cursor.execute("SELECT petg FROM material")
+            petg=cursor.fetchall()
+            costo_mat=petg[0][0]*pesolote
+        elif mat=="TECNICO":
+            cursor=conn.cursor()
+            cursor.execute("SELECT tecnico FROM material")
+            tecnico=cursor.fetchall()
+            costo_mat=tecnico[0][0]*pesolote
+    return costo_mat

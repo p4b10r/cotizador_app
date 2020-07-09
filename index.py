@@ -36,6 +36,7 @@ class Cotizador:
         comentarios=StringVar()
 
         descripcion=StringVar()
+        mat=StringVar()
         pesolote=StringVar()
         tiempolote=StringVar()
         qpiezas=StringVar()
@@ -55,6 +56,8 @@ class Cotizador:
         petg=DoubleVar()
         tecnico=DoubleVar()
 
+
+
         #========================FUNCIONES===============================
 
         #::::::::::::::::::::::::DATACLIENTE::::::::::::::::::::::::::::
@@ -72,7 +75,7 @@ class Cotizador:
         #::::::::::::::::::::::::DATALOTE::::::::::::::::::::::::::::
         def insDataLote():
             if(len(descripcion.get())!=0):
-                backend.insertDataLote(descripcion.get(), float(pesolote.get()), float(tiempolote.get()), int(qpiezas.get()), int(qlotes.get()))
+                backend.insertDataLote(descripcion.get(), mat.get(),float(pesolote.get()), float(tiempolote.get()), int(qpiezas.get()), int(qlotes.get()))
                 backend.getLote(self.treelote)
         def cleDataLote():
 
@@ -163,9 +166,9 @@ class Cotizador:
         self.txtmaterial=LabelFrame(varframe, text="Selección de Material")
         self.txtmaterial.grid(row=5, column=0, columnspan=2)
         opciones=['PLA+', 'ABS', 'PETG', 'TECNICO']
-        tkarg=StringVar(self.txtmaterial)
-        tkarg.set(opciones[0])
-        menu=OptionMenu(self.txtmaterial, tkarg, *opciones)
+        mat=StringVar(self.txtmaterial)
+        mat.set(opciones[0])
+        menu=OptionMenu(self.txtmaterial, mat, *opciones)
         menu.pack()
         self.anadirlote=ttk.Button(varframe,text="Añadir Lote", command=insDataLote).grid(row=6,column=0, columnspan=2,sticky=W+E)
 
@@ -189,20 +192,27 @@ class Cotizador:
         #Tabla
         loteframe=LabelFrame(self.p1, text='Lotes')
         loteframe.grid(row=1, column=1, sticky=E+N)
-        self.treelote=ttk.Treeview(loteframe, height=6, column=('#1','#2','#3','#4',"#5"))
+        self.treelote=ttk.Treeview(loteframe, height=6, column=('#1','#2','#3','#4',"#5","#6","#7","#8"))
         self.treelote.grid(row=1, column=0)
         self.treelote.heading('#0', text='Descripción', anchor=CENTER)
-        self.treelote.column("#0", width=340)
-        self.treelote.heading('#1', text='Peso [g]', anchor=CENTER)
-        self.treelote.column("#1", width=80)
-        self.treelote.heading('#2', text='Tiempo [hrs]',anchor=CENTER)
-        self.treelote.column("#2", width=90)
-        self.treelote.heading('#3', text='Cant. piezas [un]',anchor=CENTER)
-        self.treelote.column("#3", width=100)
-        self.treelote.heading('#4', text='Cant. lotes [un]',anchor=CENTER)
+        self.treelote.column("#0", width=200)
+
+        self.treelote.heading('#1', text='Material', anchor=CENTER)
+        self.treelote.column("#1", width=70)
+        self.treelote.heading('#2', text='Peso [g]',anchor=CENTER)
+        self.treelote.column("#2", width=70)
+        self.treelote.heading('#3', text='Tiempo [h]',anchor=CENTER)
+        self.treelote.column("#3", width=70)
+        self.treelote.heading('#4', text='Cant. piezas [un]',anchor=CENTER)
         self.treelote.column("#4", width=100)
-        self.treelote.heading('#5', text='Costo [$]',anchor=CENTER)
-        self.treelote.column("#5", width=80)
+        self.treelote.heading('#5', text='Cant. lotes [un]',anchor=CENTER)
+        self.treelote.column("#5", width=100)
+        self.treelote.heading("#6", text="costo Hora[$]", anchor=CENTER)
+        self.treelote.column("#6", width=80)
+        self.treelote.heading("#7", text="costo Mat.[$]", anchor=CENTER)
+        self.treelote.column("#7", width=80)
+        self.treelote.heading("#8", text="Subtotal[$]", anchor=CENTER)
+        self.treelote.column("#8", width=80)
         backend.getLote(self.treelote)
 
         ttk.Button(loteframe, text="Limpiar Lotes", command=delDataLote).grid(row=2, columnspan=1, sticky=W+E)
