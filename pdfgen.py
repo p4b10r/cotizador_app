@@ -1,13 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from backend import *
+from index import *
 from reportlab.pdfgen import canvas
-
-c=canvas.Canvas("pdfgen.pdf")
-
-c.drawImage("3DLUXimage.png",10,750,100,100, mask="auto")
-
-c.drawString(500,800, "vamolopibe")
+from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Image
+from reportlab.lib.pagesizes import letter
 
 
-c.save()
+
+class GeneradorCotizacion:
+    def __init__(self,titulo,data,nombrePdf):
+        self.titulo=titulo
+        self.data=data
+        self.nombrePdf=nombrePdf
+        self.estilo=getSampleStyleSheet()
+
+
+    def datosCliente(self,nombre,empresa,email):
+        self.nombre=nombre
+        self.empresa=empresa
+        self.email=email

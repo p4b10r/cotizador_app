@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import Tkinter
-import ttk
-from Tkinter import *
+import tkinter
+from tkinter import ttk
+from tkinter import *
 import sqlite3
 
 import backend
@@ -42,6 +42,7 @@ class Cotizador:
         qpiezas=StringVar()
         qlotes=StringVar()
 
+
         costofijo=DoubleVar()
         maquinas=StringVar()
         horascubiertas=DoubleVar()
@@ -66,16 +67,17 @@ class Cotizador:
                 backend.insertDataCliente(cliente.get(), empresa.get(), email.get(), comentarios.get())
                 backend.getClientes(self.treecliente)
 
+
         def cleDataCliente():
 
-            if(len(cliente.get())!=0):
-                backend.clearDataCliente()
-                backend.getClientes(self.treecliente.delete(*self.treecliente.get_children()))
+            #if(len(cliente.get())!=0):
+            backend.clearDataCliente()
+            backend.getClientes(self.treecliente.delete(*self.treecliente.get_children()))
 
         #::::::::::::::::::::::::DATALOTE::::::::::::::::::::::::::::
         def insDataLote():
             if(len(descripcion.get())!=0):
-                backend.insertDataLote(descripcion.get(), mat.get(),float(pesolote.get()), float(tiempolote.get()), int(qpiezas.get()), int(qlotes.get()))
+                backend.insertDataLote(descripcion.get(), mat.get(),float(pesolote.get()), float(tiempolote.get()), int(qpiezas.get()), int(qlotes.get()),float(fgan.get()))
                 backend.getLote(self.treelote)
         def cleDataLote():
 
@@ -112,7 +114,16 @@ class Cotizador:
             backend.deleteDataMaterial(self.treematerial)
             backend.getDataMaterial(self.treematerial.delete(*self.treematerial.get_children()))
 
+        #:::::::::::::::::::DATACOTIZACION::::::::::::::::::::::::::::::::::::::.....
 
+        def addDataCotiz():
+
+            backend.insDataCotiz()
+            backend.getDataCotiz(self.treecotiz)
+
+        def deleteDataCotiz():
+            backend.delDataCotiz()
+            backend.getDataCotiz(self.treecotiz.delete(*self.treecotiz.get_children()))
 
 
     #========================PESTAÑA1==================================
@@ -170,7 +181,17 @@ class Cotizador:
         mat.set(opciones[0])
         menu=OptionMenu(self.txtmaterial, mat, *opciones)
         menu.pack()
-        self.anadirlote=ttk.Button(varframe,text="Añadir Lote", command=insDataLote).grid(row=6,column=0, columnspan=2,sticky=W+E)
+
+        factorframe=LabelFrame(varframe, text="F.M.G")
+        factorframe.grid(row=6, column=0,columnspan=2, sticky=W+E)
+        fgan=Scale(factorframe, from_=1, to=2,orient=HORIZONTAL, resolution=0.1)
+        fgan.pack()
+
+
+
+
+
+        self.anadirlote=ttk.Button(varframe,text="Añadir Lote", command=insDataLote).grid(row=7,column=0, columnspan=2,sticky=W+E)
 
         #self.buttonframe=LabelFrame(self.wind)
         #self.buttonframe.grid(row=4, column=0, columnspan=3)
@@ -185,7 +206,7 @@ class Cotizador:
         self.treecliente.heading('#1', text="Empresa", anchor=CENTER)
         self.treecliente.heading('#2', text="Email", anchor=CENTER)
         self.treecliente.heading('#3', text="Comentarios", anchor=CENTER)
-
+        backend.getClientes(self.treecliente)
 
         ttk.Button(clienteframe, text="Limpiar Cliente", command=cleDataCliente).grid(row=2, columnspan=2, sticky=W+E)
 
@@ -195,7 +216,7 @@ class Cotizador:
         self.treelote=ttk.Treeview(loteframe, height=6, column=('#1','#2','#3','#4',"#5","#6","#7","#8"))
         self.treelote.grid(row=1, column=0)
         self.treelote.heading('#0', text='Descripción', anchor=CENTER)
-        self.treelote.column("#0", width=200)
+        self.treelote.column("#0", width=150)
 
         self.treelote.heading('#1', text='Material', anchor=CENTER)
         self.treelote.column("#1", width=70)
@@ -203,10 +224,10 @@ class Cotizador:
         self.treelote.column("#2", width=70)
         self.treelote.heading('#3', text='Tiempo [h]',anchor=CENTER)
         self.treelote.column("#3", width=70)
-        self.treelote.heading('#4', text='Cant. piezas [un]',anchor=CENTER)
-        self.treelote.column("#4", width=100)
-        self.treelote.heading('#5', text='Cant. lotes [un]',anchor=CENTER)
-        self.treelote.column("#5", width=100)
+        self.treelote.heading('#4', text='Piezas [un]',anchor=CENTER)
+        self.treelote.column("#4", width=70)
+        self.treelote.heading('#5', text='Lotes [un]',anchor=CENTER)
+        self.treelote.column("#5", width=70)
         self.treelote.heading("#6", text="costo Hora[$]", anchor=CENTER)
         self.treelote.column("#6", width=80)
         self.treelote.heading("#7", text="costo Mat.[$]", anchor=CENTER)
@@ -216,7 +237,7 @@ class Cotizador:
         backend.getLote(self.treelote)
 
         ttk.Button(loteframe, text="Limpiar Lotes", command=delDataLote).grid(row=2, columnspan=1, sticky=W+E)
-        ttk.Button(loteframe, text="Cotizar").grid(row=3, columnspan=1, sticky=W+E)
+        ttk.Button(loteframe, text="Cotizar",command=addDataCotiz).grid(row=3, columnspan=1, sticky=W+E)
 
 
         cotizframe=LabelFrame(self.p1, text="Cotización")
@@ -225,7 +246,10 @@ class Cotizador:
         self.treecotiz.heading("#0", text="Cliente", anchor=CENTER)
         self.treecotiz.heading("#1", text="Cantidad", anchor=CENTER)
         self.treecotiz.heading("#2", text="Total", anchor=CENTER)
+        backend.getDataCotiz(self.treecotiz)
         ttk.Button(cotizframe, text="Exportar pdf").grid(row=0, column=3, sticky=W+E)
+        ttk.Button(cotizframe, text="Limpiar Cliente", command=deleteDataCotiz).grid(row=0, column=4, sticky=W+E)
+
 
         self.treecotiz.grid(row=0, column=0)
 

@@ -30,12 +30,17 @@ def getClientes(treecliente):
     for row in db_rows:
         treecliente.insert('',0,text=row[1],values=(row[2],row[3],row[4]))
 
-#===============================DBLOTE===============================================
+    return db_rows
 
-def insertDataLote(descripcion,mat,pesolote, tiempolote, qpiezas, qlote):
+
+
+#===============================DBLOTE
+
+
+def insertDataLote(descripcion,mat,pesolote, tiempolote, qpiezas, qlote, fgan):
     with sqlite3.connect(db_name) as conn:
         cursor=conn.cursor()
-        result=cursor.execute('INSERT INTO lote VALUES (NULL,?,?,?,?,?,?,?,?,?)',(descripcion, mat, pesolote, tiempolote, qpiezas, qlote, costoHora(tiempolote),costoMaterial(mat,pesolote),costoHora(tiempolote)+costoMaterial(mat,pesolote)))
+        result=cursor.execute('INSERT INTO lote VALUES (NULL,?,?,?,?,?,?,?,?,?,?)',(descripcion, mat, pesolote, tiempolote, qpiezas, qlote, costoHora(tiempolote),costoMaterial(mat,pesolote),round((costoHora(tiempolote)+costoMaterial(mat,pesolote))*fgan),fgan))
         conn.commit()
         return result
 
@@ -66,6 +71,10 @@ def getLote(treelote):
         conn.commit()
         for row in db_rows:
             treelote.insert('',0,text=row[1],values=(row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9]))
+
+
+
+
 #===============================DBCOSTOS===============================================
 
 def insDataCostos(costofijo, maquinas, fmtto,horascubiertas,ferror,depreciacion,costohorareal,costomaterialpeso):
@@ -115,11 +124,44 @@ def deleteDataMaterial(treematerial):
         cursor.execute("DELETE FROM material;",)
         conn.commit()
 
+#================================DBCOTIZACION========================================
 
+
+def getDataCotiz(treecotiz):
+    with sqlite3.connect(db_name) as conn:
+        cursor=conn.cursor()
+        db_rows=cursor.execute("SELECT * FROM cotizacion")
+        conn.commit()
+        for row in db_rows:
+            treecotiz.insert("",0,text=row[1],values=(row[2],row[3]))
+
+
+def insDataCotiz():
+    with sqlite3.connect(db_name) as conn:
+        cursora=conn.cursor()
+        a=cursora.execute("SELECT Cliente FROM clientes")
+        cliente=a.fetchall()
+        cursorb=conn.cursor()
+        b=cursorb.execute("SELECT cantidadpiezas FROM lote")
+        cantidad=b.fetchall()
+        cursorc=conn.cursor()
+        c=cursorc.execute("SELECT SUM(subtotal) FROM lote")
+        total=c.fetchall()
+
+        cursor=conn.cursor()
+        cursor.execute("INSERT INTO cotizacion VALUES (NULL,?,?,?)",(cliente[0][0], cantidad[0][0], total[0][0]))
+        conn.commit()
+
+
+
+def delDataCotiz():
+    with sqlite3.connect(db_name) as conn:
+        cursor=conn.cursor()
+        cursor.execute("DELETE FROM cotizacion;",)
+        conn.commit()
 
 
 #=============================CALCULOS=================================================
-
 
 def costoHora(tiempolote):
     with sqlite3.connect(db_name) as conn:
@@ -129,7 +171,7 @@ def costoHora(tiempolote):
         cursorb.execute("SELECT tiempo FROM lote")
         a=cursora.fetchall()
         b=cursorb.fetchall()
-        costo_hora=tiempolote*a[0][0]
+        costo_hora=round(tiempolote*a[0][0],1)
         print(costo_hora)
         return costo_hora
 
@@ -139,7 +181,7 @@ def costoMaterial(mat,pesolote):
             cursor=conn.cursor()
             cursor.execute("SELECT pla FROM material")
             pla=cursor.fetchall()
-            costo_mat=pla[0][0]*pesolote
+            costo_mat=round(pla[0][0]*pesolote,1)
 
         elif mat=="ABS":
             cursor=conn.cursor()
